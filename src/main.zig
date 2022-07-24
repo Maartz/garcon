@@ -5,9 +5,15 @@ const Address = net.Address;
 pub const io_mode = .evented;
 
 pub fn main() anyerror!void {
-    const stream_server = StreamServer.init(.{});
+    var stream_server = StreamServer.init(.{});
     defer stream_server.close();
 
     const address = try Address.resolveIp("127.0.0.1", 7777);
-    stream_server.listen(address);
+    try stream_server.listen(address);
+
+    while(true) {
+        const connection = try stream_server.accept();
+        try connection.stream.writer().print("Bonjour le monde", .{});
+        connection.stream.close();
+    }
 }
