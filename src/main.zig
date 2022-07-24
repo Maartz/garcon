@@ -1,11 +1,12 @@
 const std = @import("std");
+const net = std.net;
+const StreamServer = net.StreamServer;
+const Address = net.Address;
 
 pub fn main() anyerror!void {
-    // Note that info level log messages are by default printed only in Debug
-    // and ReleaseSafe build modes.
-    std.log.info("All your codebase are belong to us.", .{});
-}
+    const stream_server = StreamServer.init(.{});
+    defer stream_server.close();
 
-test "basic test" {
-    try std.testing.expectEqual(10, 3 + 7);
+    const address = try Address.resolveIp("127.0.0.1", 7777);
+    stream_server.listen(address);
 }
