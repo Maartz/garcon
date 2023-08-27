@@ -16,7 +16,11 @@ defmodule Garcon.HTTPServer do
   def child_spec(init_args) do
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start, init_args}
+      start: {
+        Task,
+        :start_link,
+        [fn -> apply(__MODULE__, :start, init_args) end]
+      }
     }
   end
 
@@ -41,12 +45,12 @@ defmodule Garcon.HTTPServer do
 
     Logger.info("Received HTTP request #{method} at #{path}")
 
-    respond(req, method, path)
+    spawn(__MODULE__, :respond, [req, method, path])
 
     listen(socket)
   end
 
-  defp respond(req, method, path) do
+  def respond(req, method, path) do
     %Garcon.HTTPResponse{} = resp = responder().resp(req, method, path)
     response_string = Garcon.HTTPResponse.to_string(resp)
 
